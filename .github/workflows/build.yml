@@ -26,3 +26,42 @@ jobs:
       - name: Build APK
         run: |
           echo "Buraya APK oluşturma komutlarını ekleyeceksin"
+name: Build APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        pip install buildozer cython
+        sudo apt update
+        sudo apt install -y build-essential ccache git libncurses5:i386 libstdc++6:i386 zlib1g:i386 \
+          libncurses5 libstdc++6 zlib1g libssl-dev libffi-dev python3-pip python3-setuptools \
+          zip unzip openjdk-17-jdk
+
+    - name: Build APK
+      run: |
+        buildozer init || true
+        buildozer -v android debug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-release
+        path: bin/*.apk
+        
